@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  DARK RED TEMPLATE — CUSTOMIZATION MAP (line numbers account for this comment)
+  ============================================================================
+
+  APPEARANCE
+    - Browser tab title .................... line   36
+    - Color theme (:root) .................. lines  39-50
+    - Header logo size ..................... lines  102-108
+    - Social button hover colors ........... lines  745-764
+
+  HEADER AND MAIN CARD
+    - Logo placeholder ("Your Logo") ....... lines  786-788
+    - Page title and description ........... lines  797-799
+    - Xray / Clash subscription buttons .... lines  808-857
+      (client names, captions and svg icons)
+
+  CONTENT
+    - "Details" block ...................... lines  860-869
+    - Support contacts and socials ......... lines  934-960
+      (Telegram / WhatsApp / GitHub links — href attributes on lines 944, 949, 954)
+    - FAQ section (questions and answers) .. lines  962-980
+      (add new questions by copying the <details class="faq-item"> block)
+
+  BEHAVIOR
+    - FAQ animation duration ............... line   1246 (FAQ_ANIM_MS constant)
+
+  Line ranges may shift as you edit the file — also rely on the class names
+  and section headings mentioned above.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ if .subTitle }}{{ .subTitle }}{{ else }}VPN Subscription{{ end }}</title>
+  <meta name="description" content="VPN subscription dashboard with traffic, expiry info and connection links." />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #171a21;
+      --panel-2: #1f2430;
+      --text: #f5f7fb;
+      --muted: #8d95a8;
+      --accent: #e01219;
+      --accent-2: #ff3b3b;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 18px 40px rgba(0,0,0,0.28);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(800px 500px at 10% -10%, rgba(224,18,25,0.25), transparent 60%),
+        linear-gradient(135deg, #0b0d12 0%, #11141c 50%, #151922 100%);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: inherit; }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 24px 24px;
+      min-height: 88px;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      position: relative;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+    }
+
+    .brand-logo {
+      height: 48px;
+      width: auto;
+      aspect-ratio: 619 / 113;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 600;
+      background: rgba(224,18,25,0.12);
+      color: #ffb6b9;
+      border: 1px solid rgba(224,18,25,0.25);
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        min-height: auto;
+      }
+
+      .brand {
+        position: static;
+        transform: none;
+        margin: 0 auto;
+      }
+
+      .status-pill {
+        position: static;
+        transform: none;
+        margin-top: 0;
+      }
+    }
+
+    .status-pill.active {
+      background: rgba(25,190,109,0.14);
+      color: #b8ffd4;
+      border-color: rgba(25,190,109,0.26);
+    }
+
+    .status-pill::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.04);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 20px;
+    }
+
+    /* The "Details" card stretches to the full column height and the list
+       inside spreads out so its bottom lines up with the neighbouring card */
+    .details-card {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .details-card .info-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.025));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.24em;
+      font-size: 0.83rem;
+      color: #ff8c90;
+      font-weight: 700;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.03rem;
+      margin-bottom: 18px;
+      max-width: 720px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.22);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .sub-links-caption {
+      margin: 18px 0 10px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .sub-link-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      flex: 1 1 220px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .sub-link-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.22);
+      border-color: rgba(224,18,25,0.35);
+    }
+
+    .sub-link-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      flex-shrink: 0;
+      transition: background 0.18s ease;
+    }
+
+    .sub-link-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: white;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .sub-link-icon svg polygon {
+      fill: white;
+      stroke: none;
+    }
+
+    /* Cat icon: white silhouette, facial details are cut out with a mask
+       so the badge background shows through */
+    .sub-link-icon svg .cat-body {
+      fill: white;
+      stroke: none;
+    }
+
+    .sub-link-icon svg .cat-mask-cut {
+      fill: #000;
+      stroke: none;
+    }
+
+    .sub-link-icon svg .cat-mask-line {
+      fill: none;
+      stroke: #000;
+      stroke-width: 4.5;
+      stroke-linecap: round;
+    }
+
+    .sub-link-icon svg .cat-pupil {
+      fill: white;
+      stroke: none;
+    }
+
+    .sub-link-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .sub-link-text strong {
+      font-size: 0.98rem;
+    }
+
+    .sub-link-text small {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .sub-link-btn.is-copied {
+      border-color: rgba(34,197,94,0.4);
+      background: rgba(34,197,94,0.08);
+    }
+
+    .sub-link-btn.is-copied .sub-link-icon {
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+    }
+
+    .sub-link-btn.is-copied .sub-link-text small {
+      color: #b7f7cd;
+    }
+
+    .sub-link-btn.is-unavailable {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .sub-link-btn.is-unavailable:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .profile-card {
+      margin: 16px 0 8px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .profile-card-label {
+      display: block;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: #ff8c90;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .profile-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .profile-card-title::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #ff7a4f);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.05);
+    }
+
+    .profile-card-value {
+      color: var(--muted);
+      font-size: 0.95rem;
+      word-break: break-word;
+    }
+
+    .stats-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stat-item {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+    }
+
+    .stat-item .label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.93rem;
+      margin-bottom: 4px;
+    }
+
+    .stat-item .value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 20px;
+    }
+
+    .panel-grid > * {
+      min-width: 0;
+    }
+
+    .usage-card {
+      padding: 20px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+    }
+
+    .usage-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 10px;
+    }
+
+    .usage-meta-centered {
+      justify-content: center;
+      text-align: center;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), #ff7a4f);
+      transition: width 0.25s ease, background 0.25s ease;
+    }
+
+    .progress-fill.is-static {
+      width: 100%;
+      background: linear-gradient(90deg, #22c55e, #4ade80);
+    }
+
+    .config-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .config-item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      min-width: 0;
+    }
+
+    /* With an odd number of configs the last item stretches to full width */
+    .config-item:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+      justify-self: center;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    @media (max-width: 640px) {
+      .config-list {
+        grid-template-columns: 1fr;
+      }
+
+      .config-item:last-child:nth-child(odd) {
+        max-width: none;
+      }
+    }
+
+    .config-info {
+      min-width: 0;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+    }
+
+    .config-name {
+      order: 1;
+      margin: 0;
+      color: var(--accent-2);
+      font-size: 1.05rem;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .config-tags {
+      order: 2;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .config-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      line-height: 1.5;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .copy-config-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
+    .copy-config-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .copy-config-btn.is-copied {
+      background: rgba(34,197,94,0.16);
+      border-color: rgba(34,197,94,0.34);
+      color: #b7f7cd;
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .faq-item {
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .faq-item.is-open {
+      border-color: rgba(224,18,25,0.35);
+      background: rgba(255,255,255,0.055);
+    }
+
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text);
+      list-style: none;
+      user-select: none;
+    }
+
+    .faq-question::-webkit-details-marker {
+      display: none;
+    }
+
+    .faq-question:hover {
+      color: #ffb2b6;
+    }
+
+    .faq-chevron {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s ease;
+    }
+
+    .faq-item.is-open .faq-chevron {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      padding: 0 16px 14px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    .faq-answer p {
+      margin: 0;
+    }
+
+    .info-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .info-list li {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 6px 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: var(--muted);
+      min-width: 0;
+    }
+
+    .info-list strong {
+      color: var(--text);
+      text-align: right;
+      font-weight: 600;
+      max-width: 100%;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .links-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .link-pill {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.94rem;
+      word-break: break-all;
+    }
+
+    .support-link {
+      color: #ffb2b6;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .social-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-decoration: none;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .social-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+      stroke: none;
+    }
+
+    .social-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .social-btn.social-telegram:hover {
+      color: #2aabee;
+      border-color: rgba(42,171,238,0.45);
+      background: rgba(42,171,238,0.12);
+      box-shadow: 0 8px 18px rgba(42,171,238,0.2);
+    }
+
+    .social-btn.social-whatsapp:hover {
+      color: #25d366;
+      border-color: rgba(37,211,102,0.45);
+      background: rgba(37,211,102,0.12);
+      box-shadow: 0 8px 18px rgba(37,211,102,0.2);
+    }
+
+    .social-btn.social-github:hover {
+      color: #ffffff;
+      border-color: rgba(255,255,255,0.45);
+      background: rgba(255,255,255,0.12);
+      box-shadow: 0 8px 18px rgba(255,255,255,0.12);
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .panel-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 16px 14px 36px; }
+      .topbar { border-radius: 24px; padding: 14px 16px; }
+      .brand span { font-size: 0.95rem; }
+      .card, .usage-card { padding: 18px; }
+      .info-list li { flex-direction: column; gap: 4px; }
+      .info-list strong { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="#">
+        <span class="brand-logo" style="display:flex;align-items:center;justify-content:center;aspect-ratio:auto;font-size:1.5rem;font-weight:800;letter-spacing:0.06em;white-space:nowrap;">Your Logo</span>
+      </a>
+      <div class="status-pill {{ if .enabled }}active{{ end }}">
+        {{ if .enabled }}Subscription active{{ else }}Subscription disabled{{ end }}
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="card">
+          <p class="eyebrow">Subscription dashboard</p>
+          <h1>Your VPN access in one place</h1>
+          <p class="lead">Track your traffic and expiry date, and grab connection links quickly with no extra steps.</p>
+          {{ if .emails }}
+            <div class="profile-card">
+              <span class="profile-card-label">Profile</span>
+              <div class="profile-card-title">{{ index .emails 0 }}</div>
+              <div class="profile-card-value">The subscription is linked to this profile</div>
+            </div>
+          {{ end }}
+          <p class="sub-links-caption">Click to copy the subscription for the matching proxy client</p>
+          <div class="btn-row">
+            <button type="button" class="sub-link-btn copy-sub-btn" data-sub="xray">
+              <span class="sub-link-icon">
+                <svg viewBox="0 0 100 100" role="img" aria-hidden="true">
+                  <polygon points="53,53 90,53 65,65 53,100"></polygon>
+                  <polygon points="47,53 47,90 35,65 0,53"></polygon>
+                  <polygon points="53,47 53,10 65,35 100,47"></polygon>
+                  <polygon points="47,47 10,47 35,35 47,0"></polygon>
+                </svg>
+              </span>
+              <span class="sub-link-text">
+                <strong>Xray / Sing-box</strong>
+                <small class="sub-link-status">Copy subscription link</small>
+              </span>
+            </button>
+            <button type="button" class="sub-link-btn copy-sub-btn" data-sub="clash">
+              <span class="sub-link-icon">
+                <svg viewBox="0 0 100 100" role="img" aria-hidden="true">
+                  <defs>
+                    <mask id="catFaceMask">
+                      <rect width="100" height="100" fill="#fff"></rect>
+                      <polygon class="cat-mask-cut" points="23,15 26,31 38,23"></polygon>
+                      <polygon class="cat-mask-cut" points="77,15 74,31 62,23"></polygon>
+                      <ellipse class="cat-mask-cut" cx="35" cy="52" rx="10" ry="7.5"></ellipse>
+                      <ellipse class="cat-mask-cut" cx="65" cy="52" rx="10" ry="7.5"></ellipse>
+                      <polygon class="cat-mask-cut" points="43,64 57,64 50,71"></polygon>
+                      <path class="cat-mask-line" d="M50 70 v4"></path>
+                      <path class="cat-mask-line" d="M50 74 q-4 6 -10 4"></path>
+                      <path class="cat-mask-line" d="M50 74 q4 6 10 4"></path>
+                      <path class="cat-mask-line" d="M11 62 q11 3 19 1"></path>
+                      <path class="cat-mask-line" d="M13 74 q10 1 17 -3"></path>
+                      <path class="cat-mask-line" d="M89 62 q-11 3 -19 1"></path>
+                      <path class="cat-mask-line" d="M87 74 q-10 1 -17 -3"></path>
+                    </mask>
+                  </defs>
+                  <g class="cat-body" mask="url(#catFaceMask)">
+                    <polygon points="13,48 18,5 50,22"></polygon>
+                    <polygon points="87,48 82,5 50,22"></polygon>
+                    <ellipse cx="50" cy="58" rx="38" ry="36"></ellipse>
+                  </g>
+                  <ellipse class="cat-pupil" cx="35" cy="52" rx="3.2" ry="6.5"></ellipse>
+                  <ellipse class="cat-pupil" cx="65" cy="52" rx="3.2" ry="6.5"></ellipse>
+                </svg>
+              </span>
+              <span class="sub-link-text">
+                <strong>Clash / Mihomo</strong>
+                <small class="sub-link-status">Copy subscription link</small>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card details-card">
+          <h2>Details</h2>
+          <ul class="info-list">
+            <li><span>Status</span><strong>{{ if .enabled }}Active{{ else }}Disabled{{ end }}</strong></li>
+            <li><span>Expires</span><strong id="expireValue">Loading…</strong></li>
+            <li><span>Last seen</span><strong id="lastSeenValue">Loading…</strong></li>
+            <li><span>Traffic limit</span><strong id="totalValue">{{ .total }}</strong></li>
+            <li><span>Subscription ID</span><strong>{{ .sId }}</strong></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="panel-grid">
+        <div class="card">
+          <h2>Traffic</h2>
+          <div class="usage-card" data-used="{{ .used }}" data-remaining="{{ .remained }}" data-total="{{ .total }}">
+            <div class="usage-meta">
+              <span>Used: {{ .used }}</span>
+              <span id="remainingValueCard">Remaining: {{ .remained }}</span>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-fill" id="usageProgressFill"></div>
+            </div>
+            <div class="usage-meta usage-meta-centered">
+              <span id="usageSummary">Limit: {{ .total }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="label">Total traffic used</span>
+            <span class="value">{{ .used }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">Remaining</span>
+            <span class="value" id="remainingValue">{{ .remained }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">Downloaded / Uploaded</span>
+            <span class="value">{{ .download }} / {{ .upload }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top:20px;">
+        <h2>Configurations</h2>
+        <p class="lead" style="margin-bottom:10px;">Connection configurations are listed below. Use the button next to each one to copy it.</p>
+        <div class="config-list">
+          {{ range $i, $link := .links }}
+            <div class="config-item" data-index="{{ $i }}">
+              <div class="config-info">
+                <div class="config-tags"></div>
+                <p class="config-name"></p>
+              </div>
+              <button class="btn btn-secondary copy-config-btn" type="button" data-index="{{ $i }}" aria-label="Copy configuration">
+                <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                  <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+            </div>
+          {{ else }}
+            <div class="config-item">
+              <div class="config-info">
+                <div class="config-tags"><span class="config-tag">No data</span></div>
+                <p class="config-name">No connection links are available yet.</p>
+              </div>
+            </div>
+          {{ end }}
+        </div>
+      </section>
+
+      <section class="panel-grid" style="margin-top:20px;">
+        <div class="card">
+          <h2>Support contacts</h2>
+          <p class="lead" style="margin-bottom:10px;">If you have any questions about access or traffic, use the contacts below.</p>
+          {{ if .subSupportUrl }}
+            <a class="support-link" href="{{ .subSupportUrl }}">Contact support</a>
+          {{ else }}
+            <span class="support-link">No support contact provided</span>
+          {{ end }}
+          <!-- Replace "#" with real links: t.me/..., wa.me/..., github.com/... -->
+          <div class="social-links">
+            <a class="social-btn social-telegram" href="#" target="_blank" rel="noopener" aria-label="Telegram" title="Telegram">
+              <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+              </svg>
+            </a>
+            <a class="social-btn social-whatsapp" href="#" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp">
+              <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+              </svg>
+            </a>
+            <a class="social-btn social-github" href="#" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+              <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>FAQ</h2>
+          <p class="lead">Answers to common questions about the subscription and connection.</p>
+          <div class="faq-list">
+            <details class="faq-item">
+              <summary class="faq-question">
+                <span>I don't know which subscription type to copy. Which one should I choose?</span>
+                <svg class="faq-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </summary>
+              <div class="faq-answer">
+                <p>Copy the Xray/Sing-box subscription for clients such as v2ray, Happ, and other Xray-based clients.</p>
+                <p>Copy the Clash/Mihomo subscription for clients such as Clash Verge, FlClash, and other Clash-based clients.</p>
+              </div>
+            </details>
+            <!-- add new questions following the template above -->
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const expireTs = Number('{{ .expire }}') * 1000;
+    const lastSeenTs = Number('{{ .lastOnline }}');
+
+    const expireValue = document.getElementById('expireValue');
+    const lastSeenValue = document.getElementById('lastSeenValue');
+    const usageCard = document.querySelector('.usage-card');
+    const progressFill = document.getElementById('usageProgressFill');
+    const usageSummary = document.getElementById('usageSummary');
+    const remainingValue = document.getElementById('remainingValue');
+    const remainingValueCard = document.getElementById('remainingValueCard');
+    const totalValue = document.getElementById('totalValue');
+
+    if (expireValue) {
+      expireValue.textContent = expireTs > 0 ? new Date(expireTs).toLocaleString('en-US') : 'Unlimited';
+    }
+
+    if (lastSeenValue) {
+      lastSeenValue.textContent = lastSeenTs > 0 ? new Date(lastSeenTs).toLocaleString('en-US') : 'Never';
+    }
+
+    function isUnlimitedValue(value) {
+      if (value === null || value === undefined) return true;
+      const normalized = String(value).trim();
+      return !normalized || /^(∞|infinity|безлим|unlimited|no limit|not limited)$/i.test(normalized);
+    }
+
+    function parseSizeValue(value) {
+      if (!value) return null;
+      const normalized = String(value).trim().replace(/,/g, '.');
+      if (!normalized) return null;
+      if (isUnlimitedValue(normalized)) return null;
+
+      const match = normalized.match(/^(-?\d+(?:[.,]\d+)?)\s*([kmgt]?i?b?)?$/i);
+      if (!match) return null;
+
+      const amount = parseFloat(match[1].replace(',', '.'));
+      const unit = (match[2] || 'b').toLowerCase();
+      const multipliers = {
+        b: 1,
+        kb: 1024,
+        mb: 1024 ** 2,
+        gb: 1024 ** 3,
+        tb: 1024 ** 4,
+        k: 1024,
+        m: 1024 ** 2,
+        g: 1024 ** 3,
+        t: 1024 ** 4,
+        kib: 1024,
+        mib: 1024 ** 2,
+        gib: 1024 ** 3,
+        tib: 1024 ** 4
+      };
+
+      return amount * (multipliers[unit] || 1);
+    }
+
+    if (remainingValue) {
+      remainingValue.textContent = isUnlimitedValue('{{ .remained }}') ? '∞' : '{{ .remained }}';
+    }
+
+    if (remainingValueCard) {
+      remainingValueCard.textContent = `Remaining: ${isUnlimitedValue('{{ .remained }}') ? '∞' : '{{ .remained }}'}`;
+    }
+
+    if (totalValue) {
+      totalValue.textContent = isUnlimitedValue('{{ .total }}') ? '∞' : '{{ .total }}';
+    }
+
+    if (usageCard && progressFill && usageSummary) {
+      const used = parseSizeValue(usageCard.dataset.used);
+      const total = parseSizeValue(usageCard.dataset.total);
+      const totalLabel = isUnlimitedValue(usageCard.dataset.total) ? '∞' : usageCard.dataset.total;
+
+      if (used === null || total === null || total <= 0 || isUnlimitedValue(usageCard.dataset.total)) {
+        progressFill.classList.add('is-static');
+        progressFill.style.width = '100%';
+        usageSummary.textContent = `Limit: ${totalLabel}`;
+      } else {
+        const percentage = Math.min(100, Math.max(0, (used / total) * 100));
+        progressFill.style.width = `${percentage}%`;
+
+        // Hue depends on the remaining traffic: 120 (green) -> 0 (red)
+        const remainingRatio = 1 - percentage / 100;
+        const hue = Math.round(120 * remainingRatio);
+        const hueEnd = Math.round(120 * Math.max(0, remainingRatio - 0.12));
+        progressFill.style.background = `linear-gradient(90deg, hsl(${hue}, 78%, 44%), hsl(${hueEnd}, 84%, 52%))`;
+
+        usageSummary.textContent = `Limit: ${usageCard.dataset.total}`;
+      }
+    }
+
+    // Config and subscription links are passed here as JS values rather than HTML
+    // attributes. Inside <script> the Go template only applies JS string escaping and
+    // does not filter URL schemes (vless://, vmess://, trojan://, ss://), so there is
+    // no "#ZgotmplZ" here — unlike HTML attributes such as data-copy, where a
+    // non-standard URL scheme could be replaced with "#ZgotmplZ" and break the button.
+    const CONFIG_LINKS = [{{ range $i, $link := .links }}{{ if $i }},{{ end }}{{ $link }}{{ end }}];
+    const SUB_URLS = {
+      xray: {{ .subUrl }},
+      clash: {{ .subClashUrl }}
+    };
+
+    const TAG_COLORS = {
+      protocol: {
+        VLESS: { bg: 'rgba(99,102,241,0.18)', color: '#a5b4fc', border: 'rgba(99,102,241,0.4)' },
+        VMESS: { bg: 'rgba(59,130,246,0.18)', color: '#93c5fd', border: 'rgba(59,130,246,0.4)' },
+        TROJAN: { bg: 'rgba(20,184,166,0.18)', color: '#5eead4', border: 'rgba(20,184,166,0.4)' },
+        SHADOWSOCKS: { bg: 'rgba(234,179,8,0.18)', color: '#fde68a', border: 'rgba(234,179,8,0.4)' },
+        SS: { bg: 'rgba(234,179,8,0.18)', color: '#fde68a', border: 'rgba(234,179,8,0.4)' },
+        HYSTERIA2: { bg: 'rgba(236,72,153,0.18)', color: '#f9a8d4', border: 'rgba(236,72,153,0.4)' },
+        HYSTERIA: { bg: 'rgba(236,72,153,0.18)', color: '#f9a8d4', border: 'rgba(236,72,153,0.4)' },
+        TUIC: { bg: 'rgba(168,85,247,0.18)', color: '#d8b4fe', border: 'rgba(168,85,247,0.4)' }
+      },
+      transport: {
+        XHTTP: { bg: 'rgba(249,115,22,0.18)', color: '#fdba74', border: 'rgba(249,115,22,0.4)' },
+        HTTPUPGRADE: { bg: 'rgba(249,115,22,0.18)', color: '#fdba74', border: 'rgba(249,115,22,0.4)' },
+        WS: { bg: 'rgba(34,211,238,0.18)', color: '#a5f3fc', border: 'rgba(34,211,238,0.4)' },
+        GRPC: { bg: 'rgba(34,211,238,0.18)', color: '#a5f3fc', border: 'rgba(34,211,238,0.4)' },
+        TCP: { bg: 'rgba(148,163,184,0.18)', color: '#cbd5e1', border: 'rgba(148,163,184,0.4)' },
+        KCP: { bg: 'rgba(148,163,184,0.18)', color: '#cbd5e1', border: 'rgba(148,163,184,0.4)' },
+        QUIC: { bg: 'rgba(148,163,184,0.18)', color: '#cbd5e1', border: 'rgba(148,163,184,0.4)' }
+      },
+      security: {
+        TLS: { bg: 'rgba(34,197,94,0.18)', color: '#86efac', border: 'rgba(34,197,94,0.4)' },
+        REALITY: { bg: 'rgba(168,85,247,0.18)', color: '#d8b4fe', border: 'rgba(168,85,247,0.4)' }
+      },
+      default: { bg: 'rgba(255,255,255,0.08)', color: 'var(--text)', border: 'var(--border)' }
+    };
+
+    function getTagColors(category, value) {
+      return (TAG_COLORS[category] && TAG_COLORS[category][value]) || TAG_COLORS.default;
+    }
+
+    function parseConfigLink(url) {
+      const fallback = { tags: [{ text: 'Configuration', category: 'default' }], name: '' };
+      if (!url) return fallback;
+
+      let parsedUrl = null;
+      try {
+        parsedUrl = new URL(url);
+      } catch (error) {
+        return fallback;
+      }
+
+      const protocol = parsedUrl.protocol ? parsedUrl.protocol.replace(/:$/, '').toUpperCase() : '';
+      const params = parsedUrl.searchParams;
+      const transport = (params.get('type') || params.get('transport') || params.get('network') || '').toUpperCase();
+      const security = (params.get('security') || (params.get('tls') && params.get('tls') !== '0' ? 'tls' : '') || params.get('encryption') || '').toUpperCase();
+
+      const tags = [];
+      if (protocol) tags.push({ text: protocol, category: 'protocol' });
+      if (transport) tags.push({ text: transport, category: 'transport' });
+      if (security && security !== 'NONE') tags.push({ text: security, category: 'security' });
+      if (!tags.length) tags.push({ text: 'Configuration', category: 'default' });
+
+      const nameCandidates = [
+        params.get('name'),
+        parsedUrl.hash ? decodeURIComponent(parsedUrl.hash.replace(/^#/, '')) : ''
+      ].filter(Boolean);
+
+      return { tags, name: nameCandidates[0] || '' };
+    }
+
+    document.querySelectorAll('.config-item[data-index]').forEach((item) => {
+      const tagsContainer = item.querySelector('.config-tags');
+      const nameEl = item.querySelector('.config-name');
+      const index = item.dataset.index !== undefined ? parseInt(item.dataset.index, 10) : NaN;
+      const url = Number.isInteger(index) ? CONFIG_LINKS[index] : '';
+
+      if (tagsContainer && url) {
+        const parsed = parseConfigLink(url);
+        tagsContainer.innerHTML = '';
+        parsed.tags.forEach((tag) => {
+          const chip = document.createElement('span');
+          chip.className = 'config-tag';
+          chip.textContent = tag.text;
+          const colors = getTagColors(tag.category, tag.text);
+          chip.style.background = colors.bg;
+          chip.style.color = colors.color;
+          chip.style.borderColor = colors.border;
+          tagsContainer.appendChild(chip);
+        });
+        if (nameEl) nameEl.textContent = parsed.name;
+      }
+    });
+
+    async function copyTextToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (error) {
+          // Fall through to the fallback method below
+        }
+      }
+      try {
+        const tempArea = document.createElement('textarea');
+        tempArea.value = text;
+        tempArea.style.position = 'fixed';
+        tempArea.style.opacity = '0';
+        document.body.appendChild(tempArea);
+        tempArea.focus();
+        tempArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempArea);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    document.querySelectorAll('.copy-sub-btn').forEach((button) => {
+      const statusEl = button.querySelector('.sub-link-status');
+      const defaultLabel = statusEl ? statusEl.textContent : '';
+      const key = button.dataset.sub;
+      const url = (key && SUB_URLS[key]) || '';
+      let resetTimer = null;
+
+      if (!url) {
+        // The backend did not provide a link for this client — make it visible
+        // instead of silently ignoring the click.
+        button.classList.add('is-unavailable');
+        button.disabled = true;
+        button.title = 'Subscription link was not received from the server';
+        if (statusEl) statusEl.textContent = 'Link unavailable';
+        console.warn(`[copy-sub-btn] Empty subscription URL for "${key}". Make sure the backend fills this template field.`);
+        return;
+      }
+
+      button.addEventListener('click', async () => {
+        await copyTextToClipboard(url);
+
+        button.classList.add('is-copied');
+        if (statusEl) statusEl.textContent = 'Copied!';
+
+        if (resetTimer) window.clearTimeout(resetTimer);
+        resetTimer = window.setTimeout(() => {
+          button.classList.remove('is-copied');
+          if (statusEl) statusEl.textContent = defaultLabel;
+        }, 1600);
+      });
+    });
+
+    document.querySelectorAll('.copy-config-btn').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const index = button.dataset.index !== undefined ? parseInt(button.dataset.index, 10) : NaN;
+        const url = Number.isInteger(index) ? CONFIG_LINKS[index] : '';
+        if (!url) return;
+
+        await copyTextToClipboard(url);
+
+        button.classList.add('is-copied');
+        window.setTimeout(() => {
+          button.classList.remove('is-copied');
+        }, 1600);
+      });
+    });
+
+    // FAQ answers open/close animation + smooth scrolling to the opened answer.
+    // <details> cannot be animated natively, so the height is animated via the Web Animations API.
+    const FAQ_ANIM_MS = 280;
+
+    document.querySelectorAll('.faq-item').forEach((item) => {
+      const summary = item.querySelector('.faq-question');
+      const answer = item.querySelector('.faq-answer');
+      if (!summary || !answer) return;
+
+      let animation = null;
+
+      summary.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (animation) animation.cancel();
+
+        const startHeight = item.offsetHeight;
+        item.style.overflow = 'hidden';
+
+        if (!item.open) {
+          // Open immediately to measure the final height; the growth is shown by the animation
+          item.open = true;
+          item.classList.add('is-open');
+          const endHeight = item.offsetHeight;
+
+          animation = item.animate(
+            { height: [`${startHeight}px`, `${endHeight}px`] },
+            { duration: FAQ_ANIM_MS, easing: 'ease' }
+          );
+          answer.animate({ opacity: [0, 1] }, { duration: FAQ_ANIM_MS, easing: 'ease' });
+          animation.onfinish = () => {
+            animation = null;
+            item.style.overflow = '';
+          };
+
+          // If the expanded answer goes past the bottom of the screen, scroll smoothly to it
+          const finalBottom = item.getBoundingClientRect().top + endHeight;
+          const overflow = finalBottom - (window.innerHeight - 24);
+          if (overflow > 0) {
+            window.scrollBy({ top: overflow, behavior: 'smooth' });
+          }
+        } else {
+          const endHeight = summary.offsetHeight + (item.offsetHeight - item.clientHeight);
+          item.classList.remove('is-open');
+
+          animation = item.animate(
+            { height: [`${startHeight}px`, `${endHeight}px`] },
+            { duration: FAQ_ANIM_MS, easing: 'ease' }
+          );
+          answer.animate({ opacity: [1, 0] }, { duration: FAQ_ANIM_MS, easing: 'ease' });
+          animation.onfinish = () => {
+            animation = null;
+            item.open = false;
+            item.style.overflow = '';
+          };
+        }
+      });
+    });
+  </script>
+</body>
+</html>
