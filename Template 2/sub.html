@@ -1329,6 +1329,7 @@
 
     // FAQ answers open/close animation + smooth scrolling to the opened answer.
     // <details> cannot be animated natively, so the height is animated via the Web Animations API.
+    // Do not use fill: 'forwards' — it leaves opacity/height stuck and breaks re-open.
     const FAQ_ANIM_MS = 280;
 
     document.querySelectorAll('.faq-item').forEach((item) => {
@@ -1338,18 +1339,9 @@
 
       let animation = null;
 
-      const clearAnimStyles = () => {
-        item.style.height = '';
-        item.style.overflow = '';
-        answer.style.opacity = '';
-      };
-
       summary.addEventListener('click', (event) => {
         event.preventDefault();
-        if (animation) {
-          animation.cancel();
-          clearAnimStyles();
-        }
+        if (animation) animation.cancel();
 
         const startHeight = item.offsetHeight;
         item.style.overflow = 'hidden';
@@ -1362,18 +1354,12 @@
 
           animation = item.animate(
             { height: [`${startHeight}px`, `${endHeight}px`] },
-            { duration: FAQ_ANIM_MS, easing: 'ease', fill: 'forwards' }
+            { duration: FAQ_ANIM_MS, easing: 'ease' }
           );
-          answer.animate(
-            { opacity: [0, 1] },
-            { duration: FAQ_ANIM_MS, easing: 'ease', fill: 'forwards' }
-          );
+          answer.animate({ opacity: [0, 1] }, { duration: FAQ_ANIM_MS, easing: 'ease' });
           animation.onfinish = () => {
             animation = null;
-            clearAnimStyles();
-          };
-          animation.oncancel = () => {
-            animation = null;
+            item.style.overflow = '';
           };
 
           // If the expanded answer goes past the bottom of the screen, scroll smoothly to it
@@ -1388,19 +1374,13 @@
 
           animation = item.animate(
             { height: [`${startHeight}px`, `${endHeight}px`] },
-            { duration: FAQ_ANIM_MS, easing: 'ease', fill: 'forwards' }
+            { duration: FAQ_ANIM_MS, easing: 'ease' }
           );
-          answer.animate(
-            { opacity: [1, 0] },
-            { duration: FAQ_ANIM_MS, easing: 'ease', fill: 'forwards' }
-          );
+          answer.animate({ opacity: [1, 0] }, { duration: FAQ_ANIM_MS, easing: 'ease' });
           animation.onfinish = () => {
             animation = null;
             item.open = false;
-            clearAnimStyles();
-          };
-          animation.oncancel = () => {
-            animation = null;
+            item.style.overflow = '';
           };
         }
       });
