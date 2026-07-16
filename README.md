@@ -11,7 +11,8 @@ Each template is a modern, fully self-contained page that replaces the default s
 
 | Template | Name | Description |
 | --- | --- | --- |
-| [`Template 1`](<Template 1/>) | **Dark Red Template** | Dark theme with red accents: glassy cards, subscription copy buttons, config cards with protocol tags, gradient traffic bar, animated FAQ and social buttons. |
+| [`Template 1`](<Template 1/>) | **Dark Red Template** | Dark theme with red accents: glassy cards, simple background, rounded features, gradient traffic bar, smooth animations. |
+| [`Template 2`](<Template 2/>) | **Dark Teal Template** | Dark theme with teal accents: Sci-fi style, thin elegant lines, config strings with stilyzed protocol tags, gradient traffic bar, quick but smooth animations. |
 
 More templates in different styles are on the way.
 
