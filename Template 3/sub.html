@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  FLAT SIGNAL DARK — CABINET SHELL (line numbers account for this comment)
+  ============================================================================
+
+  APPEARANCE
+    - Browser tab title .................... line   36
+    - Color theme (:root) .................. lines  39-61
+    - Sidebar logo size .................... lines 115-121
+    - Social button hover colors ........... lines 273-288
+
+  SIDEBAR
+    - Logo placeholder ("Your Logo") ....... lines 985-988
+    - Support contact + socials ............ lines 1009-1028
+      (Telegram / GitHub links — href attributes on social-btn elements)
+
+  MAIN DECK
+    - Page title and description ........... lines 1034-1036
+    - Xray / Clash subscription buttons .... lines 1040-1087
+      (client names, captions and svg icons — keep svg markup unchanged)
+    - Account fact tiles ................... lines 1130-1150
+    - FAQ section (questions and answers) .. lines 1192-1206
+      (add new questions by copying the <details class="faq-item"> block)
+
+  BEHAVIOR
+    - FAQ animation duration ............... line  1473 (FAQ_ANIM_MS constant)
+
+  Line ranges may shift as you edit the file — also rely on the class names
+  and section headings mentioned above.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ if .subTitle }}{{ .subTitle }}{{ else }}VPN Subscription{{ end }}</title>
+  <meta name="description" content="VPN subscription dashboard with traffic, expiry info and connection links." />
+  <style>
+    :root {
+      --bg: #0c1017;
+      --bg-panel: #141a24;
+      --surface: #181f2b;
+      --ink: #eef2f7;
+      --muted: #8b98a8;
+      --line: #2a3344;
+      --line-strong: #3d4b5f;
+      --accent: #e85d04;
+      --accent-ink: #ffffff;
+      --accent-soft: #2a1810;
+      --navy: #080c14;
+      --navy-soft: #1c2533;
+      --ok: #3ecf8e;
+      --ok-soft: #14352a;
+      --danger: #f07178;
+      --danger-soft: #3a1518;
+      --radius: 0;
+      --sidebar: 268px;
+      --font: "Trebuchet MS", "Gill Sans", "Century Gothic", Candara, sans-serif;
+      --font-display: "Trebuchet MS", "Gill Sans", Candara, sans-serif;
+      --ease: cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; }
+
+    /* ── App shell: sidebar + deck ─────────────────────────── */
+    .shell {
+      display: grid;
+      grid-template-columns: var(--sidebar) minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 28px 22px;
+      background: var(--navy);
+      border-right: 2px solid var(--line-strong);
+      animation: slide-in 0.5s var(--ease) both;
+    }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      color: var(--ink);
+      margin-bottom: 28px;
+    }
+
+    .brand-logo {
+      height: 32px;
+      width: auto;
+      aspect-ratio: 619 / 113;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .status-flag {
+      display: block;
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-align: center;
+      color: var(--danger);
+      background: var(--danger-soft);
+      border: 2px solid var(--danger);
+      margin-bottom: 0;
+    }
+
+    .status-flag.active {
+      color: var(--ok);
+      background: var(--ok-soft);
+      border-color: var(--ok);
+    }
+
+    .sidebar-profile {
+      padding: 14px 0 18px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 20px;
+    }
+
+    .sidebar-profile-label {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .sidebar-profile-title {
+      font-weight: 700;
+      font-size: 0.92rem;
+      word-break: break-word;
+      line-height: 1.35;
+    }
+
+    .sidebar-nav {
+      display: grid;
+      gap: 4px;
+      margin-top: auto;
+    }
+
+    .sidebar-nav a {
+      display: block;
+      padding: 10px 12px;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--muted);
+      border-left: 3px solid transparent;
+      transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .sidebar-nav a:hover {
+      color: var(--ink);
+      border-left-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .sidebar-foot {
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .sidebar-foot-label {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .support-link {
+      display: block;
+      width: 100%;
+      padding: 11px 14px;
+      text-align: center;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-weight: 700;
+      text-decoration: none;
+      border: 2px solid var(--accent);
+      transition: background 0.15s ease;
+    }
+
+    .support-link:hover {
+      background: #ff7a1a;
+    }
+
+    span.support-link {
+      background: var(--bg-panel);
+      color: var(--muted);
+      border-color: var(--line-strong);
+      cursor: default;
+      font-size: 0.82rem;
+    }
+
+    span.support-link:hover {
+      background: var(--bg-panel);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .social-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 2px solid var(--line-strong);
+      color: var(--ink);
+      text-decoration: none;
+      transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .social-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      stroke: none;
+    }
+
+    .social-btn.social-telegram:hover {
+      color: #fff;
+      border-color: #229ed9;
+      background: #229ed9;
+    }
+
+    .social-btn.social-whatsapp:hover {
+      color: #fff;
+      border-color: #25d366;
+      background: #25d366;
+    }
+
+    .social-btn.social-github:hover {
+      color: #0c1017;
+      border-color: #eef2f7;
+      background: #eef2f7;
+    }
+
+    /* ── Main deck ─────────────────────────────────────────── */
+    .deck {
+      min-width: 0;
+      padding: 0 0 56px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 63px,
+          rgba(238, 242, 247, 0.025) 63px,
+          rgba(238, 242, 247, 0.025) 64px
+        ),
+        var(--bg);
+    }
+
+    .deck-top {
+      padding: 36px 40px 28px;
+      border-bottom: 2px solid var(--line);
+      animation: rise 0.45s var(--ease) both;
+    }
+
+    .deck-kicker {
+      margin: 0 0 8px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .deck-top h1 {
+      margin: 0 0 8px;
+      font-family: var(--font-display);
+      font-size: clamp(1.55rem, 4.2vw, 3.1rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      white-space: nowrap;
+    }
+
+    .deck-lead {
+      margin: 0;
+      max-width: 34rem;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    /* Subscription copy — stacked full-bleed panels */
+    .copy-stack {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 2px solid var(--line);
+      animation: rise 0.5s var(--ease) 0.05s both;
+    }
+
+    .sub-link-btn {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 28px 32px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: var(--accent-ink);
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      transition: background 0.15s ease, filter 0.15s ease;
+    }
+
+    .sub-link-btn:hover {
+      background: #ff7a1a;
+    }
+
+    .sub-link-btn[data-sub="clash"] {
+      background: var(--surface);
+      color: var(--ink);
+      border-left: 2px solid var(--line-strong);
+    }
+
+    .sub-link-btn[data-sub="clash"]:hover {
+      background: var(--navy-soft);
+    }
+
+    .sub-link-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius);
+      background: rgba(0, 0, 0, 0.28);
+      flex-shrink: 0;
+    }
+
+    .sub-link-btn[data-sub="clash"] .sub-link-icon {
+      background: var(--accent);
+    }
+
+    .sub-link-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: white;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .sub-link-icon svg polygon {
+      fill: white;
+      stroke: none;
+    }
+
+    .sub-link-icon svg .cat-body {
+      fill: white;
+      stroke: none;
+    }
+
+    .sub-link-icon svg .cat-mask-cut {
+      fill: #000;
+      stroke: none;
+    }
+
+    .sub-link-icon svg .cat-mask-line {
+      fill: none;
+      stroke: #000;
+      stroke-width: 4.5;
+      stroke-linecap: round;
+    }
+
+    .sub-link-icon svg .cat-pupil {
+      fill: white;
+      stroke: none;
+    }
+
+    .sub-link-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .sub-link-text strong {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .sub-link-text small {
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 0.85rem;
+    }
+
+    .sub-link-btn[data-sub="clash"] .sub-link-text small {
+      color: var(--muted);
+    }
+
+    .sub-link-btn.is-copied {
+      background: var(--ok);
+      color: #fff;
+      filter: none;
+    }
+
+    .sub-link-btn.is-copied .sub-link-icon {
+      background: rgba(0, 0, 0, 0.22);
+    }
+
+    .sub-link-btn.is-copied .sub-link-text small {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .sub-link-btn.is-unavailable {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .sub-link-btn.is-unavailable:hover {
+      background: var(--accent);
+    }
+
+    .sub-link-btn[data-sub="clash"].is-unavailable:hover {
+      background: var(--surface);
+    }
+
+    /* Content zones */
+    .zone {
+      padding: 36px 40px;
+      border-bottom: 2px solid var(--line);
+      animation: rise 0.5s var(--ease) both;
+    }
+
+    .zone:nth-of-type(1) { animation-delay: 0.08s; }
+    .zone:nth-of-type(2) { animation-delay: 0.12s; }
+    .zone:nth-of-type(3) { animation-delay: 0.16s; }
+    .zone:nth-of-type(4) { animation-delay: 0.2s; }
+
+    .zone-label {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .zone-label h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .zone-label span {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+    }
+
+    /* Traffic — dominant gauge */
+    .usage-card {
+      display: grid;
+      gap: 18px;
+    }
+
+    .gauge-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px 24px;
+    }
+
+    .gauge-big {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--ink);
+    }
+
+    .gauge-big small {
+      display: block;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .usage-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: right;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 28px;
+      background: var(--navy-soft);
+      border: 2px solid var(--line-strong);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.4s var(--ease), background 0.35s ease;
+    }
+
+    .progress-fill.is-static {
+      width: 100%;
+      background: var(--ok);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2px;
+      margin-top: 4px;
+      background: var(--line-strong);
+      border: 2px solid var(--line-strong);
+    }
+
+    .stat-item {
+      padding: 18px 16px;
+      background: var(--surface);
+    }
+
+    .stat-item .label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .stat-item .value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      word-break: break-word;
+    }
+
+    /* Account facts — mosaic tiles */
+    .fact-mosaic {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 2px;
+      background: var(--line-strong);
+      border: 2px solid var(--line-strong);
+    }
+
+    .fact-tile {
+      grid-column: span 2;
+      padding: 20px 18px;
+      background: var(--surface);
+      min-width: 0;
+    }
+
+    .fact-tile.wide {
+      grid-column: span 3;
+    }
+
+    .fact-tile .label {
+      display: block;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .fact-tile .value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    /* Configurations — numbered rows */
+    .zone-lead {
+      margin: -8px 0 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 40rem;
+    }
+
+    .config-list {
+      display: grid;
+      gap: 2px;
+      background: var(--line-strong);
+      border: 2px solid var(--line-strong);
+    }
+
+    .config-item {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0 16px;
+      padding: 0;
+      background: var(--surface);
+      min-width: 0;
+      transition: background 0.15s ease;
+    }
+
+    .config-item:hover {
+      background: var(--accent-soft);
+    }
+
+    .config-index {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      align-self: stretch;
+      background: var(--navy-soft);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+
+    .config-info {
+      min-width: 0;
+      padding: 14px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .config-name {
+      order: 1;
+      margin: 0;
+      color: var(--ink);
+      font-size: 1rem;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .config-tags {
+      order: 2;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .config-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: var(--radius);
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1.5;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 700;
+      border: 2px solid transparent;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-secondary {
+      background: var(--bg-panel);
+      border-color: var(--line-strong);
+      color: var(--ink);
+      margin-right: 14px;
+    }
+
+    .btn-secondary:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .copy-config-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      min-height: 42px;
+      padding: 0;
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+
+    .copy-config-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .copy-config-btn.is-copied {
+      background: var(--ok);
+      border-color: var(--ok);
+      color: #fff;
+    }
+
+    /* FAQ */
+    .faq-list {
+      display: grid;
+      gap: 2px;
+      background: var(--line-strong);
+      border: 2px solid var(--line-strong);
+    }
+
+    .faq-item {
+      border-radius: 0;
+      background: var(--surface);
+      border: none;
+      overflow: hidden;
+      transition: background 0.15s ease;
+    }
+
+    .faq-item.is-open {
+      background: var(--accent-soft);
+    }
+
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--ink);
+      list-style: none;
+      user-select: none;
+    }
+
+    .faq-question::-webkit-details-marker {
+      display: none;
+    }
+
+    .faq-question:hover {
+      color: var(--accent);
+    }
+
+    .faq-chevron {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.25s var(--ease);
+    }
+
+    .faq-item.is-open .faq-chevron {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      padding: 0 18px 16px;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.55;
+    }
+
+    .faq-answer p {
+      margin: 0 0 8px;
+    }
+
+    .faq-answer p:last-child {
+      margin-bottom: 0;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slide-in {
+      from {
+        opacity: 0;
+        transform: translateX(-12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .shell {
+        display: flex;
+        flex-direction: column;
+        grid-template-columns: none;
+      }
+
+      .sidebar,
+      .deck {
+        display: contents;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        padding: 0;
+        border: none;
+        animation: none;
+      }
+
+      .sidebar-top {
+        order: 1;
+        padding: 24px 22px 20px;
+        background: var(--navy);
+        border-bottom: 2px solid var(--line-strong);
+      }
+
+      .deck-top {
+        order: 2;
+      }
+
+      .sidebar-profile {
+        order: 3;
+        margin: 0;
+        padding: 16px 40px;
+        border-top: none;
+        border-bottom: 2px solid var(--line);
+        background: var(--bg-panel);
+      }
+
+      .deck-body {
+        order: 4;
+        padding-bottom: 56px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 63px,
+            rgba(238, 242, 247, 0.025) 63px,
+            rgba(238, 242, 247, 0.025) 64px
+          ),
+          var(--bg);
+      }
+
+      .sidebar-foot {
+        order: 5;
+        padding: 24px 22px 28px;
+        background: var(--navy);
+        border-top: 2px solid var(--line-strong);
+      }
+
+      .sidebar-nav {
+        display: none;
+      }
+
+      .copy-stack {
+        grid-template-columns: 1fr;
+      }
+
+      .sub-link-btn[data-sub="clash"] {
+        border-left: none;
+        border-top: 2px solid var(--line-strong);
+      }
+
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .fact-mosaic {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .fact-tile,
+      .fact-tile.wide {
+        grid-column: span 1;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .deck-top,
+      .zone,
+      .sidebar-profile {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .sub-link-btn {
+        padding: 22px 20px;
+      }
+
+      .usage-meta {
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      .gauge-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .config-item {
+        grid-template-columns: 40px minmax(0, 1fr);
+        padding-bottom: 12px;
+      }
+
+      .copy-config-btn {
+        grid-column: 2;
+        margin: 0 0 4px 0;
+        justify-self: start;
+      }
+
+      .config-index {
+        grid-row: 1 / 3;
+      }
+
+      .fact-mosaic {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sidebar,
+      .deck-top,
+      .copy-stack,
+      .zone {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <a class="brand" href="#">
+          <span class="brand-logo brand-mark">Your Logo</span>
+        </a>
+
+        <div class="status-flag {{ if .enabled }}active{{ end }}">
+          {{ if .enabled }}Subscription active{{ else }}Subscription disabled{{ end }}
+        </div>
+      </div>
+
+      {{ if .emails }}
+        <div class="sidebar-profile">
+          <span class="sidebar-profile-label">Signed in</span>
+          <div class="sidebar-profile-title">{{ index .emails 0 }}</div>
+        </div>
+      {{ end }}
+
+      <nav class="sidebar-nav" aria-label="Sections">
+        <a href="#traffic">Traffic</a>
+        <a href="#account">Account</a>
+        <a href="#configs">Configs</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <div class="sidebar-foot">
+        <span class="sidebar-foot-label">Support</span>
+        {{ if .subSupportUrl }}
+          <a class="support-link" href="{{ .subSupportUrl }}">Contact support</a>
+        {{ else }}
+          <span class="support-link">No support contact</span>
+        {{ end }}
+        <!-- Replace "#" with real links: t.me/..., wa.me/..., github.com/... -->
+        <div class="social-links">
+          <a class="social-btn social-telegram" href="#" target="_blank" rel="noopener" aria-label="Telegram" title="Telegram">
+            <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+            </svg>
+          </a>
+          <a class="social-btn social-github" href="https://github.com/alexaero-air/3X-UI_Sub_Templates/" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+            <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="deck">
+      <header class="deck-top">
+        <p class="deck-kicker">Personal cabinet</p>
+        <h1>VPN control deck</h1>
+        <p class="deck-lead">Copy a client subscription, watch traffic burn down, grab configs when you need them.</p>
+      </header>
+
+      <div class="deck-body">
+      <div class="copy-stack">
+        <button type="button" class="sub-link-btn copy-sub-btn" data-sub="xray">
+          <span class="sub-link-icon">
+            <svg viewBox="0 0 100 100" role="img" aria-hidden="true">
+              <polygon points="53,53 90,53 65,65 53,100"></polygon>
+              <polygon points="47,53 47,90 35,65 0,53"></polygon>
+              <polygon points="53,47 53,10 65,35 100,47"></polygon>
+              <polygon points="47,47 10,47 35,35 47,0"></polygon>
+            </svg>
+          </span>
+          <span class="sub-link-text">
+            <strong>Xray / Sing-box</strong>
+            <small class="sub-link-status">Copy subscription link</small>
+          </span>
+        </button>
+        <button type="button" class="sub-link-btn copy-sub-btn" data-sub="clash">
+          <span class="sub-link-icon">
+            <svg viewBox="0 0 100 100" role="img" aria-hidden="true">
+              <defs>
+                <mask id="catFaceMask">
+                  <rect width="100" height="100" fill="#fff"></rect>
+                  <polygon class="cat-mask-cut" points="23,15 26,31 38,23"></polygon>
+                  <polygon class="cat-mask-cut" points="77,15 74,31 62,23"></polygon>
+                  <ellipse class="cat-mask-cut" cx="35" cy="52" rx="10" ry="7.5"></ellipse>
+                  <ellipse class="cat-mask-cut" cx="65" cy="52" rx="10" ry="7.5"></ellipse>
+                  <polygon class="cat-mask-cut" points="43,64 57,64 50,71"></polygon>
+                  <path class="cat-mask-line" d="M50 70 v4"></path>
+                  <path class="cat-mask-line" d="M50 74 q-4 6 -10 4"></path>
+                  <path class="cat-mask-line" d="M50 74 q4 6 10 4"></path>
+                  <path class="cat-mask-line" d="M11 62 q11 3 19 1"></path>
+                  <path class="cat-mask-line" d="M13 74 q10 1 17 -3"></path>
+                  <path class="cat-mask-line" d="M89 62 q-11 3 -19 1"></path>
+                  <path class="cat-mask-line" d="M87 74 q-10 1 -17 -3"></path>
+                </mask>
+              </defs>
+              <g class="cat-body" mask="url(#catFaceMask)">
+                <polygon points="13,48 18,5 50,22"></polygon>
+                <polygon points="87,48 82,5 50,22"></polygon>
+                <ellipse cx="50" cy="58" rx="38" ry="36"></ellipse>
+              </g>
+              <ellipse class="cat-pupil" cx="35" cy="52" rx="3.2" ry="6.5"></ellipse>
+              <ellipse class="cat-pupil" cx="65" cy="52" rx="3.2" ry="6.5"></ellipse>
+            </svg>
+          </span>
+          <span class="sub-link-text">
+            <strong>Clash / Mihomo</strong>
+            <small class="sub-link-status">Copy subscription link</small>
+          </span>
+        </button>
+      </div>
+
+      <section class="zone" id="traffic">
+        <div class="zone-label">
+          <h2>Traffic burn</h2>
+          <span id="usageSummary">Limit: {{ .total }}</span>
+        </div>
+        <div class="usage-card" data-used="{{ .used }}" data-remaining="{{ .remained }}" data-total="{{ .total }}">
+          <div class="gauge-head">
+            <div class="gauge-big">
+              {{ .used }}
+              <small>Used so far</small>
+            </div>
+            <div class="usage-meta">
+              <span id="remainingValueCard">Remaining: {{ .remained }}</span>
+            </div>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" id="usageProgressFill"></div>
+          </div>
+          <div class="metric-grid">
+            <div class="stat-item">
+              <span class="label">Remaining</span>
+              <span class="value" id="remainingValue">{{ .remained }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="label">Downloaded</span>
+              <span class="value">{{ .download }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="label">Uploaded</span>
+              <span class="value">{{ .upload }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="zone" id="account">
+        <div class="zone-label">
+          <h2>Account facts</h2>
+          <span>{{ .sId }}</span>
+        </div>
+        <div class="fact-mosaic">
+          <div class="fact-tile">
+            <span class="label">Status</span>
+            <div class="value">{{ if .enabled }}Active{{ else }}Disabled{{ end }}</div>
+          </div>
+          <div class="fact-tile">
+            <span class="label">Expires</span>
+            <div class="value" id="expireValue">Loading…</div>
+          </div>
+          <div class="fact-tile">
+            <span class="label">Last seen</span>
+            <div class="value" id="lastSeenValue">Loading…</div>
+          </div>
+          <div class="fact-tile wide">
+            <span class="label">Traffic limit</span>
+            <div class="value" id="totalValue">{{ .total }}</div>
+          </div>
+          <div class="fact-tile wide">
+            <span class="label">Subscription ID</span>
+            <div class="value">{{ .sId }}</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="zone" id="configs">
+        <div class="zone-label">
+          <h2>Endpoint configs</h2>
+          <span>Tap copy</span>
+        </div>
+        <p class="zone-lead">Each row is a ready connection. Copy the one you need into your client.</p>
+        <div class="config-list">
+          {{ range $i, $link := .links }}
+            <div class="config-item" data-index="{{ $i }}">
+              <div class="config-index">{{ printf "%02d" $i }}</div>
+              <div class="config-info">
+                <div class="config-tags"></div>
+                <p class="config-name"></p>
+              </div>
+              <button class="btn btn-secondary copy-config-btn" type="button" data-index="{{ $i }}" aria-label="Copy configuration">
+                <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                  <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+            </div>
+          {{ else }}
+            <div class="config-item">
+              <div class="config-index">—</div>
+              <div class="config-info">
+                <div class="config-tags"><span class="config-tag">No data</span></div>
+                <p class="config-name">No connection links are available yet.</p>
+              </div>
+            </div>
+          {{ end }}
+        </div>
+      </section>
+
+      <section class="zone" id="faq" style="border-bottom: none;">
+        <div class="zone-label">
+          <h2>FAQ</h2>
+          <span>Help</span>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary class="faq-question">
+              <span>I don't know which subscription type to copy. Which one should I choose?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </summary>
+            <div class="faq-answer">
+              <p>Copy the Xray/Sing-box subscription for clients such as v2ray, Happ, and other Xray-based clients.</p>
+              <p>Copy the Clash/Mihomo subscription for clients such as Clash Verge, FlClash, and other Clash-based clients.</p>
+            </div>
+          </details>
+          <!-- add new questions following the template above -->
+        </div>
+      </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const expireTs = Number('{{ .expire }}') * 1000;
+    const lastSeenTs = Number('{{ .lastOnline }}');
+
+    const expireValue = document.getElementById('expireValue');
+    const lastSeenValue = document.getElementById('lastSeenValue');
+    const usageCard = document.querySelector('.usage-card');
+    const progressFill = document.getElementById('usageProgressFill');
+    const usageSummary = document.getElementById('usageSummary');
+    const remainingValue = document.getElementById('remainingValue');
+    const remainingValueCard = document.getElementById('remainingValueCard');
+    const totalValue = document.getElementById('totalValue');
+
+    if (expireValue) {
+      expireValue.textContent = expireTs > 0 ? new Date(expireTs).toLocaleString('en-US') : 'Unlimited';
+    }
+
+    if (lastSeenValue) {
+      lastSeenValue.textContent = lastSeenTs > 0 ? new Date(lastSeenTs).toLocaleString('en-US') : 'Never';
+    }
+
+    function isUnlimitedValue(value) {
+      if (value === null || value === undefined) return true;
+      const normalized = String(value).trim();
+      return !normalized || /^(∞|infinity|безлим|unlimited|no limit|not limited)$/i.test(normalized);
+    }
+
+    function parseSizeValue(value) {
+      if (!value) return null;
+      const normalized = String(value).trim().replace(/,/g, '.');
+      if (!normalized) return null;
+      if (isUnlimitedValue(normalized)) return null;
+
+      const match = normalized.match(/^(-?\d+(?:[.,]\d+)?)\s*([kmgt]?i?b?)?$/i);
+      if (!match) return null;
+
+      const amount = parseFloat(match[1].replace(',', '.'));
+      const unit = (match[2] || 'b').toLowerCase();
+      const multipliers = {
+        b: 1,
+        kb: 1024,
+        mb: 1024 ** 2,
+        gb: 1024 ** 3,
+        tb: 1024 ** 4,
+        k: 1024,
+        m: 1024 ** 2,
+        g: 1024 ** 3,
+        t: 1024 ** 4,
+        kib: 1024,
+        mib: 1024 ** 2,
+        gib: 1024 ** 3,
+        tib: 1024 ** 4
+      };
+
+      return amount * (multipliers[unit] || 1);
+    }
+
+    if (remainingValue) {
+      remainingValue.textContent = isUnlimitedValue('{{ .remained }}') ? '∞' : '{{ .remained }}';
+    }
+
+    if (remainingValueCard) {
+      remainingValueCard.textContent = `Remaining: ${isUnlimitedValue('{{ .remained }}') ? '∞' : '{{ .remained }}'}`;
+    }
+
+    if (totalValue) {
+      totalValue.textContent = isUnlimitedValue('{{ .total }}') ? '∞' : '{{ .total }}';
+    }
+
+    if (usageCard && progressFill && usageSummary) {
+      const used = parseSizeValue(usageCard.dataset.used);
+      const total = parseSizeValue(usageCard.dataset.total);
+      const totalLabel = isUnlimitedValue(usageCard.dataset.total) ? '∞' : usageCard.dataset.total;
+
+      if (used === null || total === null || total <= 0 || isUnlimitedValue(usageCard.dataset.total)) {
+        progressFill.classList.add('is-static');
+        progressFill.style.width = '100%';
+        usageSummary.textContent = `Limit: ${totalLabel}`;
+      } else {
+        const percentage = Math.min(100, Math.max(0, (used / total) * 100));
+        progressFill.style.width = `${percentage}%`;
+
+        // Hue depends on the remaining traffic: 120 (green) -> 0 (red)
+        const remainingRatio = 1 - percentage / 100;
+        const hue = Math.round(120 * remainingRatio);
+        const hueEnd = Math.round(120 * Math.max(0, remainingRatio - 0.12));
+        progressFill.style.background = `linear-gradient(90deg, hsl(${hue}, 78%, 44%), hsl(${hueEnd}, 84%, 52%))`;
+
+        usageSummary.textContent = `Limit: ${usageCard.dataset.total}`;
+      }
+    }
+
+    // Config and subscription links are passed here as JS values rather than HTML
+    // attributes. Inside <script> the Go template only applies JS string escaping and
+    // does not filter URL schemes (vless://, vmess://, trojan://, ss://), so there is
+    // no "#ZgotmplZ" here — unlike HTML attributes such as data-copy, where a
+    // non-standard URL scheme could be replaced with "#ZgotmplZ" and break the button.
+    const CONFIG_LINKS = [{{ range $i, $link := .links }}{{ if $i }},{{ end }}{{ $link }}{{ end }}];
+    const SUB_URLS = {
+      xray: {{ .subUrl }},
+      clash: {{ .subClashUrl }}
+    };
+
+    const TAG_COLORS = {
+      protocol: {
+        VLESS: { bg: '#1c2533', color: '#9db4d0', border: '#3d4b5f' },
+        VMESS: { bg: '#2a1810', color: '#ff9a4d', border: '#e85d04' },
+        TROJAN: { bg: '#1c2533', color: '#9db4d0', border: '#3d4b5f' },
+        SHADOWSOCKS: { bg: '#2a2210', color: '#f0c674', border: '#b45309' },
+        SS: { bg: '#2a2210', color: '#f0c674', border: '#b45309' },
+        HYSTERIA2: { bg: '#14352a', color: '#3ecf8e', border: '#2d6a4f' },
+        HYSTERIA: { bg: '#14352a', color: '#3ecf8e', border: '#2d6a4f' },
+        TUIC: { bg: '#1c2533', color: '#9db4d0', border: '#3d4b5f' }
+      },
+      transport: {
+        XHTTP: { bg: '#2a1810', color: '#ff9a4d', border: '#e85d04' },
+        HTTPUPGRADE: { bg: '#2a1810', color: '#ff9a4d', border: '#e85d04' },
+        WS: { bg: '#1c2533', color: '#9db4d0', border: '#3d4b5f' },
+        GRPC: { bg: '#1c2533', color: '#9db4d0', border: '#3d4b5f' },
+        TCP: { bg: '#1a222e', color: '#8b98a8', border: '#3d4b5f' },
+        KCP: { bg: '#1a222e', color: '#8b98a8', border: '#3d4b5f' },
+        QUIC: { bg: '#1a222e', color: '#8b98a8', border: '#3d4b5f' }
+      },
+      security: {
+        TLS: { bg: '#14352a', color: '#3ecf8e', border: '#2d6a4f' },
+        REALITY: { bg: '#2a1810', color: '#ff9a4d', border: '#e85d04' }
+      },
+      default: { bg: '#141a24', color: 'var(--ink)', border: 'var(--line-strong)' }
+    };
+
+    function getTagColors(category, value) {
+      return (TAG_COLORS[category] && TAG_COLORS[category][value]) || TAG_COLORS.default;
+    }
+
+    function parseConfigLink(url) {
+      const fallback = { tags: [{ text: 'Configuration', category: 'default' }], name: '' };
+      if (!url) return fallback;
+
+      let parsedUrl = null;
+      try {
+        parsedUrl = new URL(url);
+      } catch (error) {
+        return fallback;
+      }
+
+      const protocol = parsedUrl.protocol ? parsedUrl.protocol.replace(/:$/, '').toUpperCase() : '';
+      const params = parsedUrl.searchParams;
+      const transport = (params.get('type') || params.get('transport') || params.get('network') || '').toUpperCase();
+      const security = (params.get('security') || (params.get('tls') && params.get('tls') !== '0' ? 'tls' : '') || params.get('encryption') || '').toUpperCase();
+
+      const tags = [];
+      if (protocol) tags.push({ text: protocol, category: 'protocol' });
+      if (transport) tags.push({ text: transport, category: 'transport' });
+      if (security && security !== 'NONE') tags.push({ text: security, category: 'security' });
+      if (!tags.length) tags.push({ text: 'Configuration', category: 'default' });
+
+      const nameCandidates = [
+        params.get('name'),
+        parsedUrl.hash ? decodeURIComponent(parsedUrl.hash.replace(/^#/, '')) : ''
+      ].filter(Boolean);
+
+      return { tags, name: nameCandidates[0] || '' };
+    }
+
+    document.querySelectorAll('.config-item[data-index]').forEach((item) => {
+      const tagsContainer = item.querySelector('.config-tags');
+      const nameEl = item.querySelector('.config-name');
+      const index = item.dataset.index !== undefined ? parseInt(item.dataset.index, 10) : NaN;
+      const url = Number.isInteger(index) ? CONFIG_LINKS[index] : '';
+
+      if (tagsContainer && url) {
+        const parsed = parseConfigLink(url);
+        tagsContainer.innerHTML = '';
+        parsed.tags.forEach((tag) => {
+          const chip = document.createElement('span');
+          chip.className = 'config-tag';
+          chip.textContent = tag.text;
+          const colors = getTagColors(tag.category, tag.text);
+          chip.style.background = colors.bg;
+          chip.style.color = colors.color;
+          chip.style.borderColor = colors.border;
+          tagsContainer.appendChild(chip);
+        });
+        if (nameEl) nameEl.textContent = parsed.name;
+      }
+    });
+
+    async function copyTextToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (error) {
+          // Fall through to the fallback method below
+        }
+      }
+      try {
+        const tempArea = document.createElement('textarea');
+        tempArea.value = text;
+        tempArea.style.position = 'fixed';
+        tempArea.style.opacity = '0';
+        document.body.appendChild(tempArea);
+        tempArea.focus();
+        tempArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempArea);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    document.querySelectorAll('.copy-sub-btn').forEach((button) => {
+      const statusEl = button.querySelector('.sub-link-status');
+      const defaultLabel = statusEl ? statusEl.textContent : '';
+      const key = button.dataset.sub;
+      const url = (key && SUB_URLS[key]) || '';
+      let resetTimer = null;
+
+      if (!url) {
+        // The backend did not provide a link for this client — make it visible
+        // instead of silently ignoring the click.
+        button.classList.add('is-unavailable');
+        button.disabled = true;
+        button.title = 'Subscription link was not received from the server';
+        if (statusEl) statusEl.textContent = 'Link unavailable';
+        console.warn(`[copy-sub-btn] Empty subscription URL for "${key}". Make sure the backend fills this template field.`);
+        return;
+      }
+
+      button.addEventListener('click', async () => {
+        await copyTextToClipboard(url);
+
+        button.classList.add('is-copied');
+        if (statusEl) statusEl.textContent = 'Copied!';
+
+        if (resetTimer) window.clearTimeout(resetTimer);
+        resetTimer = window.setTimeout(() => {
+          button.classList.remove('is-copied');
+          if (statusEl) statusEl.textContent = defaultLabel;
+        }, 1600);
+      });
+    });
+
+    document.querySelectorAll('.copy-config-btn').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const index = button.dataset.index !== undefined ? parseInt(button.dataset.index, 10) : NaN;
+        const url = Number.isInteger(index) ? CONFIG_LINKS[index] : '';
+        if (!url) return;
+
+        await copyTextToClipboard(url);
+
+        button.classList.add('is-copied');
+        window.setTimeout(() => {
+          button.classList.remove('is-copied');
+        }, 1600);
+      });
+    });
+
+    // FAQ answers open/close animation + smooth scrolling to the opened answer.
+    // <details> cannot be animated natively, so the height is animated via the Web Animations API.
+    // Do not use fill: 'forwards' — it leaves opacity/height stuck and breaks re-open.
+    const FAQ_ANIM_MS = 280;
+
+    document.querySelectorAll('.faq-item').forEach((item) => {
+      const summary = item.querySelector('.faq-question');
+      const answer = item.querySelector('.faq-answer');
+      if (!summary || !answer) return;
+
+      let animation = null;
+
+      summary.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (animation) animation.cancel();
+
+        const startHeight = item.offsetHeight;
+        item.style.overflow = 'hidden';
+
+        if (!item.open) {
+          // Open immediately to measure the final height; the growth is shown by the animation
+          item.open = true;
+          item.classList.add('is-open');
+          const endHeight = item.offsetHeight;
+
+          animation = item.animate(
+            { height: [`${startHeight}px`, `${endHeight}px`] },
+            { duration: FAQ_ANIM_MS, easing: 'ease' }
+          );
+          answer.animate({ opacity: [0, 1] }, { duration: FAQ_ANIM_MS, easing: 'ease' });
+          animation.onfinish = () => {
+            animation = null;
+            item.style.overflow = '';
+          };
+
+          // If the expanded answer goes past the bottom of the screen, scroll smoothly to it
+          const finalBottom = item.getBoundingClientRect().top + endHeight;
+          const overflow = finalBottom - (window.innerHeight - 24);
+          if (overflow > 0) {
+            window.scrollBy({ top: overflow, behavior: 'smooth' });
+          }
+        } else {
+          const endHeight = summary.offsetHeight + (item.offsetHeight - item.clientHeight);
+          item.classList.remove('is-open');
+
+          animation = item.animate(
+            { height: [`${startHeight}px`, `${endHeight}px`] },
+            { duration: FAQ_ANIM_MS, easing: 'ease' }
+          );
+          answer.animate({ opacity: [1, 0] }, { duration: FAQ_ANIM_MS, easing: 'ease' });
+          animation.onfinish = () => {
+            animation = null;
+            item.open = false;
+            item.style.overflow = '';
+          };
+        }
+      });
+    });
+  </script>
+</body>
+</html>
