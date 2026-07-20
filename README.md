@@ -13,6 +13,7 @@ Each template is a modern, fully self-contained page that replaces the default s
 | --- | --- | --- |
 | [`Template 1`](<Template 1/>) | **Dark Red Template** | Dark theme with red accents: glassy cards, simple background, rounded features, gradient traffic bar, smooth animations. |
 | [`Template 2`](<Template 2/>) | **Dark Teal Template** | Dark theme with teal accents: Sci-fi style, thin elegant lines, config strings with stilyzed protocol tags, gradient traffic bar, quick but smooth animations. |
+| [`Template 3`](<Template 3/>) | **Flat Signal Template** | Dark theme with flat style, orange accents, sidebar, minimalistic but large layout, quick and smooth animations. |
 
 More templates in different styles are on the way.
 
